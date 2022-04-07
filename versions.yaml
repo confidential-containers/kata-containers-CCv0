@@ -75,7 +75,7 @@ assets:
       url: "https://github.com/cloud-hypervisor/cloud-hypervisor"
       uscan-url: >-
         https://github.com/cloud-hypervisor/cloud-hypervisor/tags.*/v?(\d\S+)\.tar\.gz
-      version: "v20.2"
+      version: "v22.1"
 
     firecracker:
       description: "Firecracker micro-VMM"
@@ -83,13 +83,13 @@ assets:
       uscan-url: >-
         https://github.com/firecracker-microvm/firecracker/tags
         .*/v?(\d\S+)\.tar\.gz
-      version: "v0.23.1"
+      version: "v0.23.4"
 
     qemu:
       description: "VMM that uses KVM"
       url: "https://github.com/qemu/qemu"
-      version: "v6.1.0"
-      tag: "v6.1.0"
+      version: "v6.2.0"
+      tag: "v6.2.0"
       # Do not include any non-full release versions
       # Break the line *without CR or space being appended*, to appease
       # yamllint, and note the deliberate ' ' at the end of the expression.
@@ -98,17 +98,20 @@ assets:
       uscan-url: >-
         https://github.com/qemu/qemu/tags
         .*/v?(\d\S+)\.tar\.gz
-      architecture:
-        aarch64:
-          version: "v5.1.0"
-          branch: "master"
-          tag: "v5.1.0"
-          commit: "d0ed6a69d399ae193959225cdeaa9382746c91cc"
+      tdx:
+        description: "VMM that uses KVM and supports TDX"
+        url: "https://github.com/intel/qemu-tdx"
+        tag: "tdx-qemu-2021.11.29-v6.0.0-rc1-mvp"
 
     qemu-experimental:
       description: "QEMU with virtiofs support"
       url: "https://github.com/qemu/qemu"
       version: "7a800cf9496fddddf71b21a00991e0ec757a170a"
+
+    td-shim:
+      description: "Confidential Containers Shim Firmware"
+      url: "https://github.com/confidential-containers/td-shim"
+      version: "a7742f572a19364601fee93be6da09968ec8cd0b"
 
   image:
     description: |
@@ -155,12 +158,21 @@ assets:
   kernel:
     description: "Linux kernel optimised for virtual machines"
     url: "https://cdn.kernel.org/pub/linux/kernel/v5.x/"
-    version: "v5.10.25"
+    version: "v5.15.26"
+    tdx:
+      description: "Linux kernel that supports TDX"
+      url: "https://github.com/intel/tdx/archive/refs/tags"
+      tag: "tdx-guest-v5.15-4"
 
   kernel-experimental:
     description: "Linux kernel with virtio-fs support"
     url: "https://cdn.kernel.org/pub/linux/kernel/v5.x/"
     tag: "v5.13.10"
+
+  arm-kernel-experimental:
+    description: "Linux kernel with cpu/mem hotplug support on arm64"
+    url: "https://cdn.kernel.org/pub/linux/kernel/v5.x/"
+    version: "v5.15.7"
 
 externals:
   description: "Third-party projects used by the system"
@@ -179,7 +191,7 @@ externals:
     description: |
       OCI-based Kubernetes Container Runtime Interface implementation
     url: "https://github.com/cri-o/cri-o"
-    branch: "release-1.22"
+    branch: "release-1.23"
 
   containerd:
     description: |
@@ -194,7 +206,7 @@ externals:
   critools:
     description: "CLI tool for Container Runtime Interface (CRI)"
     url: "https://github.com/kubernetes-sigs/cri-tools"
-    version: "1.22.0"
+    version: "1.23.0"
 
   gperf:
     description: "GNU gperf is a perfect hash function generator"
@@ -209,7 +221,7 @@ externals:
     uscan-url: >-
       https://github.com/kubernetes/kubernetes/tags
       .*/v?([\d\.]+)\.tar\.gz
-    version: "1.22.0-00"
+    version: "1.23.1-00"
 
   libseccomp:
     description: "High level interface to Linux seccomp filter"
@@ -226,18 +238,15 @@ externals:
       .*/v?(\d\S+)\.tar\.gz
     version: "v1.0.1"
 
-  musl:
-    description: |
-      The musl library is used to build the rust agent.
-    url: "https://www.musl-libc.org/"
-    uscan-url: >-
-      https://www.musl-libc.org/releases/
-      musl-([\d\.]+)\.tar\.gz
-    version: "1.1.23"
-    meta:
-      description: |
-        'newest-version' is the latest version known to work.
-      newest-version: "1.1.23"
+  nydus:
+    description: "Nydus image acceleration service"
+    url: "https://github.com/dragonflyoss/image-service"
+    version: "v1.1.2"
+
+  nydus-snapshotter:
+    description: "Snapshotter for Nydus image acceleration service"
+    url: "https://github.com/containerd/nydus-snapshotter"
+    version: "v0.1.0"
 
 languages:
   description: |
@@ -260,12 +269,12 @@ languages:
   rust:
     description: "Rust language"
     notes: "'version' is the default minimum version used by this project."
-    version: "1.45.0"
+    version: "1.58.1"
     meta:
       description: |
         'newest-version' is the latest version known to work when
         building Kata
-      newest-version: "1.54.0"
+      newest-version: "1.58.1"
 
 specs:
   description: "Details of important specifications"
