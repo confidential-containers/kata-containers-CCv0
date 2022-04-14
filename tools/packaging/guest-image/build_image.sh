@@ -32,7 +32,24 @@ build_initrd() {
 	export USE_DOCKER=1
 	export AGENT_INIT="yes"
 	# ROOTFS_BUILD_DEST is a Make variable
-	sudo -E PATH="$PATH" make rootfs ROOTFS_BUILD_DEST="${rootfs_build_dest}"
+	
+	echo "STARTING BUILD_INITRD"
+	#used for debugging
+	CONFIGURE_SEV=yes
+	# check if there is a file in the kernel mod folder
+	#add a parameter to the make call for kernel_module_dir that points to the file
+	if [ -n "${CONFIGURE_SEV}" ]; then
+		if find "${rootfs_build_dest}" -type d -name modules | grep . ; then 
+			module_dir=$( find ${rootfs_build_dest} -type d -name modules )
+			sudo -E PATH="$PATH" make rootfs ROOTFS_BUILD_DEST="${rootfs_build_dest}" KERNEL_MODULE_DIR="${module_dir}"
+		else
+			die "unable to find kernel module, building normally"
+			sudo -E PATH="$PATH" make rootfs ROOTFS_BUILD_DEST="${rootfs_build_dest}"
+		fi
+	else
+		#build as normal if not SEV
+		sudo -E PATH="$PATH" make rootfs ROOTFS_BUILD_DEST="${rootfs_build_dest}"	
+	fi
 	if [ -n "${INCLUDE_ROOTFS:-}" ]; then
 		sudo cp -RL --preserve=mode "${INCLUDE_ROOTFS}/." "${rootfs_build_dest}/${initrd_distro}_rootfs/"
 	fi

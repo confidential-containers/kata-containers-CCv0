@@ -167,6 +167,11 @@ assets:
     url: "https://cdn.kernel.org/pub/linux/kernel/v5.x/"
     version: "v5.15.7"
 
+  sev-kernel:
+    description: "Linux kernel with efi_secret support"
+    url: "https://github.com/confidential-containers-demo/linux/archive/refs/tags/"
+    version: "v5.13-rc2"
+
 externals:
   description: "Third-party projects used by the system"
 
