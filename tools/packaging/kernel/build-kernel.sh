@@ -128,7 +128,30 @@ get_tdx_kernel() {
 	if [ ! -f "${kernel_tarball}" ]; then
 	   curl --fail -OL "${kernel_url}/${kernel_tarball}"
 	fi
+	tar --strip-components=1 -xf ${kernel_tarball} -C ${kernel_path} 
+}
 
+get_sev_kernel() {
+	#required 'v' has been previously stripped
+	local version="v${1}"
+	local kernel_path=${2}
+
+	echo "${version}"
+	echo ${kernel_path}
+
+	kernel_tarball="${version}.tar.gz"
+
+	#echo "GET_FROM_DEPS FXN CALL"
+	##kernel_url=$(get_from_kata_deps "assets.sev-kernel.version")
+	kernel_url="https://github.com/confidential-containers-demo/linux/archive/refs/tags/"
+	kernel_tarball="efi-secret-v10.tar.gz"
+	echo "KERNEL URL: ${kernel_url}"
+
+	if [ ! -f "${kernel_tarball}" ]; then
+	   curl --fail -OL "${kernel_url}${kernel_tarball}"
+	fi
+
+	mkdir -p ${kernel_path}
 	tar --strip-components=1 -xf ${kernel_tarball} -C ${kernel_path}
 }
 
@@ -141,6 +164,11 @@ get_kernel() {
 
 	if [ "${conf_guest}" == "tdx" ]; then
 		get_tdx_kernel ${version} ${kernel_path}
+		return
+	fi
+
+	if [ "${conf_guest}" == "sev" ]; then
+		get_sev_kernel ${version} ${kernel_path}
 		return
 	fi
 
@@ -358,7 +386,7 @@ setup_kernel() {
 
 		[ -n "$kernel_path" ] || die "failed to find kernel source path"
 	fi
-
+	
 	get_config_and_patches
 
 	[ -d "${patches_path}" ] || die " patches path '${patches_path}' does not exist"
@@ -398,7 +426,11 @@ build_kernel() {
 	[ -n "${arch_target}" ] || arch_target="$(uname -m)"
 	arch_target=$(arch_to_kernel "${arch_target}")
 	pushd "${kernel_path}" >>/dev/null
-	make -j $(nproc) ARCH="${arch_target}"
+	make -j $(nproc) ARCH="${arch_target}" 
+
+	if [ "${conf_guest}" == "sev" ]; then
+		make -j $(nproc) INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=${kernel_path} modules_install
+	fi
 	[ "$arch_target" != "powerpc" ] && ([ -e "arch/${arch_target}/boot/bzImage" ] || [ -e "arch/${arch_target}/boot/Image.gz" ])
 	[ -e "vmlinux" ]
 	([ "${hypervisor_target}" == "firecracker" ] || [ "${hypervisor_target}" == "cloud-hypervisor" ]) && [ "${arch_target}" == "arm64" ] && [ -e "arch/${arch_target}/boot/Image" ]
@@ -542,6 +574,8 @@ main() {
 			esac
 		elif [[ "${conf_guest}" == "tdx" ]]; then
 			 kernel_version=$(get_from_kata_deps "assets.kernel.tdx.tag")
+		elif [[ "${conf_guest}" == "sev" ]]; then
+			 kernel_version=$(get_from_kata_deps "assets.sev-kernel.version")
 		else
 			kernel_version=$(get_from_kata_deps "assets.kernel.version")
 		fi

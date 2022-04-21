@@ -72,6 +72,7 @@ options:
 	firecracker
 	kernel
 	kernel-experimental
+	kernel-sev
 	qemu
 	rootfs-image
 	rootfs-initrd
@@ -107,6 +108,14 @@ install_experimental_kernel() {
 	export kernel_version="$(yq r $versions_yaml assets.kernel-experimental.tag)"
 	info "Kernel version ${kernel_version}"
 	DESTDIR="${destdir}" PREFIX="${prefix}" "${kernel_builder}" -f -b experimental -v ${kernel_version}
+}
+
+#Install sev kernel asset
+install_sev_kernel() {
+	info "build sev kernel"
+	export kernel_version="$(yq r $versions_yaml assets.sev-kernel.version)"
+	info "Kernel version ${kernel_version}"
+	DESTDIR="${destdir}" PREFIX="${prefix}" "${kernel_builder}" -f -x sev -v ${kernel_version}
 }
 
 # Install static qemu asset
@@ -183,6 +192,8 @@ handle_build() {
 
 	kernel-experimental) install_experimental_kernel;;
 
+	kernel-sev) install_sev_kernel;;
+
 	qemu) install_qemu ;;
 
 	rootfs-image) install_image ;;
@@ -214,6 +225,7 @@ main() {
 		firecracker
 		kernel
 		kernel-experimental
+		kernel-sev
 		qemu
 		rootfs-image
 		rootfs-initrd
