@@ -41,6 +41,8 @@ kernel-tarball:
 kernel-experimental-tarball:
 	${MAKE} $@-build
 
+kernel-sev-tarball:
+	${MAKE} $@-build
 
 qemu-tarball:
 	${MAKE} $@-build
