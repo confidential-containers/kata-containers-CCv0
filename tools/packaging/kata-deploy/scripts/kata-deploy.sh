@@ -39,7 +39,11 @@ function get_container_runtime() {
                 die "invalid node name"
 	fi
 	if echo "$runtime" | grep -qE 'containerd.*-k3s'; then
-		if systemctl is-active --quiet k3s-agent; then
+		if systemctl is-active --quiet rke2-agent; then
+			echo "rke2-agent"
+		elif systemctl is-active --quiet rke2-server; then
+			echo "rke2-server"
+		elif systemctl is-active --quiet k3s-agent; then
 			echo "k3s-agent"
 		else
 			echo "k3s"

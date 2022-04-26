@@ -40,6 +40,17 @@ $ cd $GOPATH/src/github.com/kata-containers/kata-containers/tools/packaging/kata
 $ kubectl apply -k kata-deploy/overlays/k3s
 ```
 
+#### For your [RKE2](https://docs.rke2.io/) cluster, do:
+
+```sh
+$ GO111MODULE=auto go get github.com/kata-containers/kata-containers
+```
+
+```bash
+$ cd $GOPATH/src/github.com/kata-containers/kata-containers/tools/packaging/kata-deploy
+$ kubectl apply -k kata-deploy/overlays/rke2
+```
+
 #### Ensure kata-deploy is ready
 ```sh
 kubectl -n kube-system wait --timeout=10m --for=condition=Ready -l name=kata-deploy pod
