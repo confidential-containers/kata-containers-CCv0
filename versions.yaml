@@ -242,6 +242,13 @@ externals:
     description: "Snapshotter for Nydus image acceleration service"
     url: "https://github.com/containerd/nydus-snapshotter"
     version: "v0.1.0"
+  
+  virtio-fs:
+    description: ""
+    url: "htt[s://gitlab.com/virtio-fs/virtiofsd"
+    version: v1.2.0
+    meta:
+      download-url: "https://gitlab.com/virtio-fs/virtiofsd/uploads/b26d9891caac83209a3fdd24bcf2ae86/virtiofsd-v1.2.0.zip"
 
   virtiofsd:
     description: "vhost-user virtio-fs device backend written in Rust"
