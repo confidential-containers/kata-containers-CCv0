@@ -60,8 +60,6 @@ function install_artifacts() {
 }
 
 function configure_cri_runtime() {
-	configure_different_shims_base
-
 	case $1 in
 	crio)
 		configure_crio
@@ -72,59 +70,6 @@ function configure_cri_runtime() {
 	esac
 	systemctl daemon-reload
 	systemctl restart "$1"
-}
-
-function configure_different_shims_base() {
-	# Currently containerd has an assumption on the location of the shimv2 implementation
-	# This forces kata-deploy to create files in a well-defined location that's part of
-	# the PATH, pointing to the containerd-shim-kata-v2 binary in /opt/kata/bin
-	# Issues:
-	#   https://github.com/containerd/containerd/issues/3073
-	#   https://github.com/containerd/containerd/issues/5006
-
-	mkdir -p /usr/local/bin
-
-	for shim in "${shims[@]}"; do
-		local shim_binary="containerd-shim-kata-${shim}-v2"
-		local shim_file="/usr/local/bin/${shim_binary}"
-		local shim_backup="/usr/local/bin/${shim_binary}.bak"
-
-		if [ -f "${shim_file}" ]; then
-			echo "warning: ${shim_binary} already exists" >&2
-			if [ ! -f "${shim_backup}" ]; then
-				mv "${shim_file}" "${shim_backup}"
-			else
-				rm "${shim_file}"
-			fi
-		fi
-
-		cat << EOF | tee "$shim_file"
-#!/usr/bin/env bash
-/opt/kata/bin/containerd-shim-kata-v2 "\$@"
-EOF
-		chmod +x "$shim_file"
-
-		if [ "${shim}" == "${default_shim}" ]; then
-			echo "Creating the default shim-v2 binary"
-			ln -sf "${shim_file}" /usr/local/bin/containerd-shim-kata-v2
-		fi
-	done
-}
-
-function cleanup_different_shims_base() {
-	for shim in "${shims[@]}"; do
-		local shim_binary="containerd-shim-kata-${shim}-v2"
-		local shim_file="/usr/local/bin/${shim_binary}"
-		local shim_backup="/usr/local/bin/${shim_binary}.bak"
-
-		rm "${shim_file}" || true
-
-		if [ -f "${shim_backup}" ]; then
-			mv "$shim_backup" "$shim_file"
-		fi
-	done
-
-	rm /usr/local/bin/containerd-shim-kata-v2
 }
 
 function configure_crio_runtime() {
@@ -233,8 +178,6 @@ function remove_artifacts() {
 }
 
 function cleanup_cri_runtime() {
-	cleanup_different_shims_base
-
 	case $1 in
 	crio)
 		cleanup_crio
