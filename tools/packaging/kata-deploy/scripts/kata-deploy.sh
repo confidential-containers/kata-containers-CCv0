@@ -181,6 +181,7 @@ function configure_containerd_runtime() {
 	local runtime_table="plugins.${pluginid}.containerd.runtimes.$runtime"
 	local runtime_type="io.containerd.$runtime.v2"
 	local options_table="$runtime_table.options"
+	local kata_path="/opt/kata/bin/containerd-shim-${runtime}-v2"
 	local config_path="/opt/kata/share/defaults/kata-containers/$configuration.toml"
 	if grep -q "\[$runtime_table\]" $containerd_conf_file; then
 		echo "Configuration exists for $runtime_table, overwriting"
@@ -197,10 +198,12 @@ EOF
 	if grep -q "\[$options_table\]" $containerd_conf_file; then
 		echo "Configuration exists for $options_table, overwriting"
 		sed -i "/\[$options_table\]/,+1s#ConfigPath.*#ConfigPath = \"${config_path}\"#" $containerd_conf_file
+		sed -i "/\[$options_table\]/,+1s#BinaryPath.*#BinaryPath = \"${kata_path}\"#" $containerd_conf_file
 	else
 		cat <<EOF | tee -a "$containerd_conf_file"
   [$options_table]
     ConfigPath = "${config_path}"
+    BinaryPath = "${kata_path}"
 EOF
 	fi
 }
